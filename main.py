@@ -17,6 +17,102 @@ client = openai.OpenAI()
 model = "gpt-4o"
 
 
+def get_all_active_locations():
+    # Define your database connection parameters
+    db_params = {
+        "dbname": os.getenv("dbname"),
+        "user": os.getenv("user"),
+        "password": os.getenv("password"),
+        "host": os.getenv("host"),
+        "port": os.getenv("pg_port"),
+    }
+
+    try:
+        # Connect to your PostgreSQL database
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+
+        # Define the query to select all active locations
+        query = sql.SQL(
+            "SELECT name, address, city, state, zip FROM locations WHERE is_active = True"
+        )
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all results
+        locations = cursor.fetchall()
+
+        # Get column names
+        colnames = [desc[0] for desc in cursor.description]
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        if locations:
+            # Convert to a list of dictionaries
+            locations_list = [dict(zip(colnames, location)) for location in locations]
+
+            # Convert to JSON
+            locations_json = json.dumps(locations_list, indent=4)
+            return f"Here is some information about all active locations:\n\n{locations_json}"
+        else:
+            return "No active locations found."
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(f"Error: {error}")
+        return None
+
+
+def get_all_active_positions():
+    # Define your database connection parameters
+    db_params = {
+        "dbname": os.getenv("dbname"),
+        "user": os.getenv("user"),
+        "password": os.getenv("password"),
+        "host": os.getenv("host"),
+        "port": os.getenv("pg_port"),
+    }
+
+    try:
+        # Connect to your PostgreSQL database
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+
+        # Define the query to select all active positions
+        query = sql.SQL(
+            "SELECT name, description, key_responsibilities, qualifications, benefits FROM positions WHERE is_active = True"
+        )
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all results
+        positions = cursor.fetchall()
+
+        # Get column names
+        colnames = [desc[0] for desc in cursor.description]
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        if positions:
+            # Convert to a list of dictionaries
+            positions_list = [dict(zip(colnames, position)) for position in positions]
+
+            # Convert to JSON
+            positions_json = json.dumps(positions_list, indent=4)
+            return f"Here is some information about all active positions:\n\n{positions_json}"
+        else:
+            return "No active positions found."
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(f"Error: {error}")
+        return None
+
+
 def get_location_by_id(location_id):
     # Define your database connection parameters
     db_params = {
@@ -33,7 +129,9 @@ def get_location_by_id(location_id):
         cursor = connection.cursor()
 
         # Define the query
-        query = sql.SQL("SELECT name, address, city, state, zip FROM locations WHERE id = %s AND is_active = True")
+        query = sql.SQL(
+            "SELECT name, address, city, state, zip FROM locations WHERE is_active = True"
+        )
 
         # Execute the query
         cursor.execute(query, (location_id,))
@@ -79,7 +177,7 @@ def get_position_by_id(position_id):
         cursor = connection.cursor()
 
         # Define the query
-        query = sql.SQL("SELECT * FROM positions WHERE id = %s AND is_active = True")
+        query = sql.SQL("SELECT name, description, key_responsibilities, qualifications, benefits FROM positions WHERE id = %s AND is_active = True")
 
         # Execute the query
         cursor.execute(query, (position_id,))
@@ -95,14 +193,10 @@ def get_position_by_id(position_id):
         connection.close()
 
         if position:
+            # Get column names
+            colnames = [desc[0] for desc in cursor.description]
             # Convert to a dictionary
             position_dict = dict(zip(colnames, position))
-
-            # Convert datetime objects to strings
-            for key, value in position_dict.items():
-                if isinstance(value, datetime):
-                    position_dict[key] = value.isoformat()
-
             # Convert to JSON
             position_json = json.dumps(position_dict)
             return f"""Here is some information about the position with id {position_id}:\n\n   
@@ -116,10 +210,11 @@ def get_position_by_id(position_id):
         return None
 
 
+
 class AssistantManager:
     thread_id = None
-    #assistant_id = None
-    assistant_id = os.getenv("ASST_ID")
+    # assistant_id = None
+    #assistant_id = os.getenv("ASST_ID")
 
     def __init__(self, model: str = model):
         self.client = client
@@ -146,14 +241,14 @@ class AssistantManager:
             )
             AssistantManager.assistant_id = assistant_obj.id
             self.assistant = assistant_obj
-            #print(f"AssisID::::: {self.assistant.id}")
+            # print(f"AssisID::::: {self.assistant.id}")
 
     def create_thread(self):
         if not self.thread:
             thread_obj = self.client.beta.threads.create()
             AssistantManager.thread_id = thread_obj.id
             self.thread = thread_obj
-            #print(f"ThreadID::::: {self.thread.id}")
+            # print(f"ThreadID::::: {self.thread.id}")
 
     def add_message_to_thread(self, role, content):
         if self.thread:
@@ -180,7 +275,7 @@ class AssistantManager:
             summary.append(response)
 
             self.summary = "\n".join(summary)
-            #print(f"SUMMARY------> {role.capitalize()}: ==> {response}")
+            # print(f"SUMMARY------> {role.capitalize()}: ==> {response}")
 
             # for msg in messages:
             #    role = msg.role
@@ -198,14 +293,25 @@ class AssistantManager:
 
             if func_name == "get_location_by_id":
                 output = get_location_by_id(location_id=arguments["location_id"])
-                #print(f"STUFFFFF;;;; {output}")
-                
+                # print(f"STUFFFFF;;;; {output}")
+
                 tools_outputs.append({"tool_call_id": action["id"], "output": output})
-            
-                
+
             elif func_name == "get_position_by_id":
                 output = get_position_by_id(position_id=arguments["position_id"])
-                #print(f"STUFFFFF;;;; {output}")
+                # print(f"STUFFFFF;;;; {output}")
+
+                tools_outputs.append({"tool_call_id": action["id"], "output": output})
+
+            elif func_name == "get_all_active_locations":
+                output = get_all_active_locations()
+                # print(f"STUFFFFF;;;; {output}")
+
+                tools_outputs.append({"tool_call_id": action["id"], "output": output})
+
+            elif func_name == "get_all_active_positions":
+                output = get_all_active_positions()
+                # print(f"STUFFFFF;;;; {output}")
 
                 tools_outputs.append({"tool_call_id": action["id"], "output": output})
             else:
@@ -226,7 +332,7 @@ class AssistantManager:
                 run_status = self.client.beta.threads.runs.retrieve(
                     thread_id=self.thread.id, run_id=self.run.id
                 )
-                #print(f"RUN STATUS:: {run_status.model_dump_json(indent=4)}")
+                # print(f"RUN STATUS:: {run_status.model_dump_json(indent=4)}")
 
                 if run_status.status == "completed":
                     self.process_message()
@@ -243,7 +349,7 @@ class AssistantManager:
         run_steps = self.client.beta.threads.runs.steps.list(
             thread_id=self.thread.id, run_id=self.run.id
         )
-        #print(f"Run-Steps::: {run_steps}")
+        # print(f"Run-Steps::: {run_steps}")
         return run_steps
 
 
@@ -257,17 +363,18 @@ def main():
     st.title("Locations & Positions retriever")
 
     with st.form(key="user_input_form"):
-        instructions = st.text_input("Enter location_id or position_id:")
+        instructions = st.text_input("Enter query:")
         submit_button = st.form_submit_button(label="Send")
 
         if submit_button:
 
             import timeit
+
             start = timeit.default_timer()
 
             manager.create_assistant(
                 name="L&P Assistant",
-                instructions="You are a helpful assistant. If you are asked about a location, use the id of the location with the provided get_location_by_id function to get the information about the location, then answer the user's question with that data exclusively. If you are asked about a position, use the id of the position with the provided get_position_by_id function to get the information about the position, then answer the user's question with that data exclusively.",
+                instructions="You are a helpful assistant. If you are asked about a location, use the id of the location with the provided get_location_by_id function to get the information about the location, then answer the user's question with that data exclusively. If you are asked about a position, use the id of the position with the provided get_position_by_id function to get the information about the position, then answer the user's question with that data exclusively. If you are asked about all the locations, use the provided get_all_active_locations function to get the information about the locations, then answer the user's question with that data exclusively. If you are asked about all the positions, use the provided get_all_active_positions function to get the information about the positions, then answer the user's question with that data exclusively.",
                 tools=[
                     {
                         "type": "function",
@@ -303,6 +410,20 @@ def main():
                             },
                         },
                     },
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "get_all_active_locations",
+                            "description": "Get details about all locations",
+                        },
+                    },
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "get_all_active_positions",
+                            "description": "Get details about all positions",
+                        },
+                    },
                 ],
             )
             manager.create_thread()
@@ -310,7 +431,7 @@ def main():
             # Add the message and run the assistant
             manager.add_message_to_thread(
                 role="user",
-                content=f"Summarize the details based on the query and the id: {instructions}",
+                content=f"Summarize the details based on the query: {instructions}",
             )
 
             manager.run_assistant(instructions="Summarize the details")
@@ -319,14 +440,17 @@ def main():
             manager.wait_for_completion()
 
             summary = manager.get_summary()
+            
+            stop = timeit.default_timer()
+            print("Time: ", stop - start)
+            
             st.write(summary)
+            
+     
 
             st.text("Run Steps:")
             st.code(manager.run_steps(), line_numbers=True)
-            
-            stop = timeit.default_timer()
 
-            print('Time: ', stop - start)  
 
 
 if __name__ == "__main__":
