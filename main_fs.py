@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import re  # Import regex for string cleaning
+import timeit
 
 # Load environment variables
 load_dotenv(override=True)
@@ -23,57 +24,70 @@ assistant = client.beta.assistants.update(
 # Streamlit App
 st.title("Chat with Your Assistant 🤖")
 
-# Initialize session state for chat history
+# Initialize session state for chat history and thread ID
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "thread_id" not in st.session_state:
+    st.session_state.thread_id = None
 
 # Display chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-import timeit
-start = timeit.default_timer()
-
 # User input
 if prompt := st.chat_input("What would you like to ask?"):
+    start = timeit.default_timer()
+
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Create a thread and send the user's message
-    thread = client.beta.threads.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ]
+    # Create a thread if it doesn't exist
+    if st.session_state.thread_id is None:
+        thread = client.beta.threads.create()
+        st.session_state.thread_id = thread.id
+        thread_id = thread.id  # Define thread_id here
+    else:
+        thread_id = st.session_state.thread_id  # Use existing thread_id
+
+    # Add the user's message to the thread
+    client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=prompt
     )
 
-    # Create and poll the run
-    run = client.beta.threads.runs.create_and_poll(thread_id=thread.id, assistant_id=assistant.id)
+    try:
+        # Create and poll the run
+        run = client.beta.threads.runs.create_and_poll(
+            thread_id=thread_id,
+            assistant_id=assistant.id
+        )
 
-    # Check if the run completed successfully
-    if run.status == 'completed':
-        stop = timeit.default_timer()
-        print("Time: ", stop - start)
-        # Retrieve the assistant's response
-        messages = list(client.beta.threads.messages.list(thread_id=thread.id, run_id=run.id))
-        if messages:
-            # Extract the text value without annotations
-            assistant_response = messages[0].content[0].text.value
+        # Check if the run completed successfully
+        if run.status == 'completed':
+            stop = timeit.default_timer()
+            print("Time: ", stop - start)
 
-            # Remove citations using regex
-            # This regex matches patterns like 【4:0†active_positions.json】
-            assistant_response = re.sub(r"【.*?】", "", assistant_response).strip()
+            # Retrieve the assistant's response
+            messages = list(client.beta.threads.messages.list(thread_id=thread_id))
+            if messages:
+                for message in messages:
+                    if message.role == "assistant":
+                        assistant_response = message.content[0].text.value
+                        # Remove citations using regex
+                        assistant_response = re.sub(r"【.*?】", "", assistant_response).strip()
+                        break
 
-            # Add assistant's response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": assistant_response})
-            with st.chat_message("assistant"):
-                st.markdown(assistant_response)
+                # Add assistant's response to chat history
+                st.session_state.messages.append({"role": "assistant", "content": assistant_response})
+                with st.chat_message("assistant"):
+                    st.markdown(assistant_response)
+            else:
+                st.error("No response from the assistant.")
         else:
-            st.error("No response from the assistant.")
-    else:
-        st.error(f"Run did not complete successfully. Status: {run.status}")
+            st.error(f"Run did not complete successfully. Status: {run.status}")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")

@@ -1,0 +1,18 @@
+Position ID: 3
+Name: Ejecutivos Telefónicos
+Description: Perfil: Bachillerato concluido, experiencia en call center de preferencia en áreas de ventas, atención a clientes y/o retención. Horario: Lunes a Viernes, 6 horas, de 14:00 a 20:00
+Benefits: Descuentos empresariales en diversos establecimientos como: Chopo, LAPI, Six Flags, Recorcholis, Devly, Acuario Inbursa, Boliche. Caja de Ahorro, Seguro de Vida, Seguro de Gastos médicos, Incentivos en la operación; Prestaciones de ley desde el primer día de contratación e inicio de capacitación
+Salary Range: $8364 mensual, se paga de manera quincenal la parte proporcional con Santander o BBVA
+
+Position ID: 6
+Name: Asesor de Ventas
+Description: Perfil: Bachillerato trunco, experiencia en ventas, facilidad de palabra y atención a cliente. Horario: Lunes a domingo, disponibilidad para trabajar de 11am a 8pm o de 12pm a 9pm, 1 día de descanso a la semana.
+Benefits: Prestaciones de ley desde el primer día de contratación e inicio de capacitación, cotizando al 100%; Seguro de vida, caja de ahorro, asistencia telefónica, ambulancia, asistencia hogar, asistencia médica, legal, psicológica, nutiricional (via telefónica), convenios educativos entretenimiento, salud. Plan dental. Consultas médicas a precio preferencial, asistencia funeraria, asistencia vial.
+Salary Range: $9,000 mensual bruto, se paga de manera quicenal la parte proporcional con BBVA o Santander. Esquema de comisiones mensuales a mes vencido, se paga la segunda quincena del mes.
+
+Position ID: 5
+Name: Ejecutivo de Ventas
+Description: Perfil: Bachillerato trunco, experiencia en ventas, facilidad de palabra y atención a cliente. Horario: Lunes a domingo de 11am a 9pm, 1 hora y media de comida Dos días de descanso a la semana rolados pero consecutivos. Más un fn de semana largo al mes (sábado, domingo y lunes).
+Benefits: Prestaciones de ley desde su firma de contrato, cotizando al 100%; Seguro de vida, caja de ahorro, asistencia telefónica, ambulancia, asistencia hogar, asistencia médica, legal, psicológica, nutiricional (via telefónica), convenios educativos entretenimiento, salud. Plan dental. Consultas médicas a precio preferencial, asistencia funeraria, asistencia vial.
+Salary Range: $8,250 mensual bruto, se paga de manera quincenal la parte proporcional con BBVA o Santander. Esquema de comisiones no topado y en equipo mensuales a mes vencido, se paga la segunda quincena del mes.
+
