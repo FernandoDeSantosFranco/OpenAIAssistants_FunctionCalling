@@ -421,7 +421,7 @@ def generate_grouped_available_locations_files():
 
         # Define the query to select all active locations with available positions
         query = sql.SQL("""
-            SELECT DISTINCT l.id, l.name, l.city, l.state, l.zip
+            SELECT DISTINCT l.id, l.name, l.address, l.city, l.state, l.zip
             FROM locations l
             JOIN locations_positions lp ON l.id = lp.location_id
             JOIN positions p ON lp.position_id = p.id
@@ -470,8 +470,10 @@ def generate_grouped_available_locations_files():
                     for location in locations_in_state:
                         state_file.write(f"id: {location['id']},\n")
                         state_file.write(f"name: {location['name']},\n")
+                        state_file.write(f"Address: {location['address']}\n")
                         state_file.write(f"city: {location['city']},\n")
                         state_file.write(f"state: {location['state']},\n")
+                        state_file.write(f"zip: {location['zip']},\n")                        
                         state_file.write("\n")  # Separator between locations
                     state_file.write("\n")  # Separator between states
             print("File 'all_available_locations_by_state.txt' generated successfully.")
@@ -483,8 +485,11 @@ def generate_grouped_available_locations_files():
                     for location in locations_in_city:
                         city_file.write(f"id: {location['id']},\n")
                         city_file.write(f"name: {location['name']},\n")
+                        city_file.write(f"Address: {location['address']}\n")
                         city_file.write(f"city: {location['city']},\n")
                         city_file.write(f"state: {location['state']},\n")
+                        city_file.write(f"zip: {location['zip']},\n")                        
+
                         city_file.write("\n")  # Separator between locations
                     city_file.write("\n")  # Separator between cities
             print("File 'all_available_locations_by_city.txt' generated successfully.")
@@ -700,5 +705,5 @@ def all_available_positions_details(filename="all_available_positions_details.tx
 all_available_positions_details()
 generate_positions_available_for_locations()
 generate_grouped_available_locations_files()
-#load_to_vector_store()
+load_to_vector_store()
     

@@ -1234,7 +1234,7 @@ id: 6,
 name: Asesor de Ventas.
 
 
-Positions available for Suburbia Vía Vallejo (Location id: 210):
+Positions available for SUBURBIA VÍA VALLEJO (Location id: 210):
 
 id: 6,
 name: Asesor de Ventas.

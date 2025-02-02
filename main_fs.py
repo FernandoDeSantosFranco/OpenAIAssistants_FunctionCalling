@@ -61,10 +61,20 @@ if prompt := st.chat_input("What would you like to ask?"):
 
     try:
         # Create and poll the run
-        run = client.beta.threads.runs.create_and_poll(
+        candidate_identifier = "28364655923149842"
+        
+        if len(candidate_identifier) < 16:
+            run = client.beta.threads.runs.create_and_poll(
             thread_id=thread_id,
-            assistant_id=assistant.id
+            assistant_id=assistant.id,
+            additional_instructions=""". Make sure to gently ask questions again if the user ignores them until you have everything.  If they try to change the topic, redirect the conversation to the main interview script."""
         )
+        else:
+            run = client.beta.threads.runs.create_and_poll(
+                thread_id=thread_id,
+                assistant_id=assistant.id,
+                additional_instructions="""and phone number. Make sure to gently ask questions again if the user ignores them until you have everything.  If they try to change the topic, redirect the conversation to the main interview script."""
+            )
 
         # Check if the run completed successfully
         if run.status == 'completed':
